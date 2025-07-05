@@ -1,34 +1,103 @@
-// src/app/page.tsx
+// src/app/(main)/page.tsx
+'use client';
 
-import Link from 'next/link';
+import { Bus, Clock, MapPin } from '@phosphor-icons/react';
+
+// Tipos para os nossos dados (útil para quando formos usar dados reais)
+type LinhaProxima = {
+  id: string;
+  linha: string;
+  nome: string;
+  tempoEstimado: number;
+  status: 'Pontual' | 'Atrasado';
+};
+
+type LinhaHistorico = {
+  id: string;
+  linha: string;
+  nome: string;
+  ultimoLocal: string;
+};
 
 export default function HomePage() {
+  // --- DADOS MOCK (VAZIOS POR ENQUANTO) ---
+  // No futuro, estes arrays serão preenchidos com dados do seu banco de dados.
+  const linhasProximas: LinhaProxima[] = [];
+  const historico: LinhaHistorico[] = [];
+  // -----------------------------------------
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24 bg-gray-50">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-gray-800 mb-4">
-          Bem-vindo ao Roobus
-        </h1>
-        <p className="text-lg text-gray-600 mb-8">
-          Esta é a sua página inicial.
-        </p>
-        <div className="flex flex-col items-center gap-4">
-          <Link
-            href="/login"
-            className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition-colors"
-          >
-            Ir para Login
-          </Link>
+    <div>
+      {/* Cabeçalho Roxo/Azul */}
+      <header className="bg-indigo-700 text-white p-4 shadow-md">
+        <h1 className="text-xl font-bold">Meu Ônibus</h1>
+      </header>
 
-          <Link
-            href="/cadastro"
-            className="px-6 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition-colors"
-          >
-            Ir para Cadastro
-          </Link>
-        </div>
+      {/* Container para o conteúdo principal da página com padding */}
+      <div className="p-4">
+        {/* Seção Linhas Próximas */}
+        <section className="mb-8">
+          <h2 className="text-center text-lg font-semibold text-gray-800 mb-4">
+            Linhas Próximas
+          </h2>
+          <div className="space-y-3">
+            {linhasProximas.length > 0 ? (
+              // Se houver linhas, mapeie e mostre os cards
+              linhasProximas.map((linha) => (
+                <div key={linha.id} className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm flex items-center gap-4">
+                  <Bus size={28} className="text-gray-600 flex-shrink-0" />
+                  <div className="flex-grow">
+                    <p className="font-bold text-gray-900">{linha.linha} - {linha.nome}</p>
+                    <div className="flex items-center gap-1 text-sm text-gray-500">
+                      <Clock size={16} />
+                      <span>{linha.tempoEstimado} min</span>
+                    </div>
+                  </div>
+                  <span className={`px-3 py-1 text-xs font-bold text-white rounded-full ${
+                      linha.status === 'Pontual' ? 'bg-green-500' : 'bg-red-600'
+                    }`}>
+                    {linha.status}
+                  </span>
+                </div>
+              ))
+            ) : (
+              // Se não houver linhas, mostre a mensagem
+              <div className="bg-white text-center p-6 rounded-lg border border-gray-200">
+                <p className="text-gray-500">Não há linhas próximas</p>
+              </div>
+            )}
+          </div>
+        </section>
 
+        {/* Seção Histórico */}
+        <section>
+          <h2 className="text-center text-lg font-semibold text-gray-800 mb-4">
+            Histórico
+          </h2>
+          <div className="space-y-3">
+            {historico.length > 0 ? (
+              // Se houver histórico, mapeie e mostre os cards
+              historico.map((item) => (
+                <div key={item.id} className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm flex items-center gap-4">
+                  <Bus size={28} className="text-gray-600 flex-shrink-0" />
+                  <div className="flex-grow">
+                    <p className="font-bold text-gray-900">{item.linha} - {item.nome}</p>
+                    <div className="flex items-center gap-1 text-sm text-gray-500">
+                      <MapPin size={16} />
+                      <span>{item.ultimoLocal}</span>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              // Se não houver histórico, mostre a mensagem
+              <div className="bg-white text-center p-6 rounded-lg border border-gray-200">
+                <p className="text-gray-500">Nenhum ônibus embarcado anteriormente</p>
+              </div>
+            )}
+          </div>
+        </section>
       </div>
-    </main>
+    </div>
   );
 }

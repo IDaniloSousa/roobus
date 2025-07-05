@@ -1,4 +1,5 @@
 // src/app/(main)/layout.tsx
+
 import Navbar from '@/components/Navbar';
 
 export default function MainLayout({
@@ -7,13 +8,17 @@ export default function MainLayout({
   children: React.ReactNode;
 }) {
   return (
-    // O div extra com padding-bottom garante que o conteúdo da página
-    // não seja coberto pela Navbar fixa. `pb-20` é uma boa base.
-    <div className="pb-20">
-      {/* '{children}' é onde o conteúdo da sua página (page.tsx) será renderizado */}
-      <main>{children}</main>
-
-      {/* A Navbar é renderizada aqui, fora do conteúdo principal da página */}
+    // Container principal que agora controla o layout da tela inteira
+    <div className="flex flex-col min-h-screen">
+      
+      {/* A tag <main> agora cresce para ocupar todo o espaço disponível,
+        empurrando a Navbar para o final da tela.
+      */}
+      <main className="flex-grow bg-gray-50">
+        {children}
+      </main>
+      
+      {/* A Navbar é o último item do flex container, posicionando-se no fundo */}
       <Navbar />
     </div>
   );
