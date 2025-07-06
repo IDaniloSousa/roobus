@@ -1,6 +1,7 @@
 // src/app/(main)/layout.tsx
 
 import Navbar from '@/components/Navbar';
+import Header from '@/components/Header'; // 1. Importe o novo componente
 
 export default function MainLayout({
   children,
@@ -8,17 +9,15 @@ export default function MainLayout({
   children: React.ReactNode;
 }) {
   return (
-    // Container principal que agora controla o layout da tela inteira
     <div className="flex flex-col min-h-screen">
-      
-      {/* A tag <main> agora cresce para ocupar todo o espaço disponível,
-        empurrando a Navbar para o final da tela.
-      */}
+
+      {/* 2. Adicione o Header aqui, passando um título padrão */}
+      <Header title="RooBus" />
+
       <main className="flex-grow bg-gray-50">
         {children}
       </main>
-      
-      {/* A Navbar é o último item do flex container, posicionando-se no fundo */}
+
       <Navbar />
     </div>
   );
