@@ -1,36 +1,94 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚌 RooBus - Sistema de Rastreamento de Ônibus
 
-## Getting Started
+Aplicativo web para rastreamento de ônibus urbanos em tempo real, desenvolvido com Next.js, React, TypeScript e MongoDB.
 
-First, run the development server:
+## 🚀 Configuração Inicial (Nova Máquina)
+
+### Pré-requisitos
+- Node.js 18+
+- npm ou yarn
+- MongoDB (local ou Atlas)
+
+### 📋 Passos para instalação:
 
 ```bash
+# 1. Clone o repositório
+git clone <seu-repositorio>
+cd roobus
+
+# 2. Instale as dependências
+npm install
+
+# 3. Configure as variáveis de ambiente
+cp .env.example .env
+# Edite o arquivo .env com suas configurações
+
+# 4. Gere o cliente Prisma
+npx prisma generate
+
+# 5. Execute o projeto em desenvolvimento
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 🌐 Acesse o aplicativo
+Abra [http://localhost:3000](http://localhost:3000) no seu navegador.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🛠️ Tecnologias Utilizadas
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Frontend**: Next.js 15, React 19, TypeScript
+- **Estilização**: Tailwind CSS 4
+- **Banco de Dados**: MongoDB + Prisma ORM
+- **Ícones**: Phosphor Icons
+- **Autenticação**: Sistema próprio com cookies
 
-## Learn More
+## 📁 Estrutura do Projeto
 
-To learn more about Next.js, take a look at the following resources:
+```
+roobus/
+├── src/
+│   ├── app/                 # App Router (Next.js 13+)
+│   │   ├── (main)/         # Grupo de rotas principais
+│   │   ├── api/            # API Routes
+│   │   └── lib/            # Utilitários
+│   └── components/         # Componentes React
+├── prisma/                 # Schema do banco
+├── public/                 # Arquivos estáticos
+└── ...
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🔧 Scripts Disponíveis
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run dev      # Servidor de desenvolvimento
+npm run build    # Build de produção
+npm run start    # Servidor de produção
+npm run lint     # Verificação de código
+```
 
-## Deploy on Vercel
+## ⚠️ Importante - Arquivos NÃO Versionados
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Os seguintes arquivos/pastas são gerados automaticamente e NÃO devem ser commitados:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `/.next/` - Build do Next.js
+- `/node_modules/` - Dependências
+- `.env` - Variáveis de ambiente
+- `*.tsbuildinfo` - Cache do TypeScript
+
+## 🗃️ Banco de Dados
+
+O projeto usa MongoDB com Prisma. Para configurar:
+
+1. Crie uma conta no [MongoDB Atlas](https://www.mongodb.com/atlas) ou use MongoDB local
+2. Adicione a string de conexão no arquivo `.env`:
+   ```
+   DATABASE_URL="mongodb+srv://usuario:senha@cluster.mongodb.net/roobus"
+   ```
+3. Execute `npx prisma generate` para gerar o cliente
+
+## 🚀 Deploy
+
+O projeto pode ser deployado facilmente na [Vercel](https://vercel.com):
+
+1. Conecte seu repositório GitHub à Vercel
+2. Configure as variáveis de ambiente
+3. Deploy automático a cada push na branch main

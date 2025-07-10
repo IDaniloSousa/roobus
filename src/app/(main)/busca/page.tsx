@@ -132,7 +132,7 @@ export default function BuscaPage() {
           )}
           {searchTerm && filteredResults.length === 0 && (
             <div className="text-center py-10">
-              <p className="text-gray-600">Nenhum resultado encontrado para "{searchTerm}"</p>
+              <p className="text-gray-600">Nenhum resultado encontrado para &quot;{searchTerm}&quot;</p>
             </div>
           )}
         </div>

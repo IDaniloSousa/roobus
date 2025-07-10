@@ -24,9 +24,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json(novoUsuario, { status: 201 });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Trata erro de email/matrícula duplicado
-    if (error.code === 'P2002') {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
          return NextResponse.json({ error: 'Email ou matrícula já existem.' }, { status: 409 });
     }
     console.error(error);

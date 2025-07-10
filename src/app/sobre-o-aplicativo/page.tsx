@@ -1,13 +1,6 @@
 // src/app/sobre-o-aplicativo/page.tsx
 'use client';
 
-import { useState } from 'react';
-import {
-  CaretDown,
-  ThumbsUp,
-  ThumbsDown,
-  PaperPlaneTilt,
-} from '@phosphor-icons/react';
 import Header from '@/components/Header'; // Importando nosso Header reutilizável
 
 export default function Sobre() {
