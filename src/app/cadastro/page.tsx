@@ -72,8 +72,10 @@ export default function CadastroPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex flex-col">
+      <div className="flex-1 flex flex-col justify-center px-6 py-8 lg:px-8">
+        <div className="sm:mx-auto sm:w-full sm:max-w-md">
+          <div className="bg-white py-8 px-6 shadow-xl rounded-2xl sm:px-8">
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">🚌 RooBus</h1>
@@ -213,12 +215,14 @@ export default function CadastroPage() {
 
         {/* Link para voltar */}
         <div className="mt-4 text-center">
-          <Link 
-            href="/" 
+          <Link
+            href="/"
             className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
           >
             ← Voltar para o início
           </Link>
+        </div>
+          </div>
         </div>
       </div>
     </div>

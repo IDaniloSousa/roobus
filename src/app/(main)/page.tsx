@@ -4,7 +4,6 @@
 import { User } from '@phosphor-icons/react';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 
 // Tipos para os nossos dados (útil para quando formos usar dados reais)
 type LinhaProxima = {
@@ -54,7 +53,7 @@ export default function HomePage() {
 
   return (
     <div className="p-4">
-      {/* Cabeçalho com botão de login e cadastro */}
+      {/* Cabeçalho simplificado */}
       <header className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">🚌 RooBus</h1>
@@ -62,7 +61,7 @@ export default function HomePage() {
         </div>
 
         <div className="flex items-center gap-3">
-          {isLoggedIn ? (
+          {isLoggedIn && (
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <User size={20} />
@@ -75,21 +74,6 @@ export default function HomePage() {
                 Sair
               </button>
             </div>
-          ) : (
-            <>
-              <Link
-                href="/login"
-                className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
-              >
-                Entrar
-              </Link>
-              <Link
-                href="/cadastro"
-                className="flex items-center gap-2 bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300 transition-colors"
-              >
-                Cadastrar
-              </Link>
-            </>
           )}
         </div>
       </header>
