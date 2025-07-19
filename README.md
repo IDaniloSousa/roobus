@@ -81,7 +81,7 @@ O projeto usa MongoDB com Prisma. Para configurar:
 1. Crie uma conta no [MongoDB Atlas](https://www.mongodb.com/atlas) ou use MongoDB local
 2. Adicione a string de conexão no arquivo `.env`:
    ```
-   DATABASE_URL="mongodb+srv://usuario:senha@cluster.mongodb.net/roobus"
+   Apagado por questões de segurança.
    ```
 3. Execute `npx prisma generate` para gerar o cliente
 
