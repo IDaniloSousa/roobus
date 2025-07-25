@@ -24,3 +24,35 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Estilo para a bolinha azul central do ícone do usuário */
+.user-location-icon {
+  background-color: #3b82f6; /* Azul do Tailwind (blue-500) */
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 3px solid #ffffff;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+/* Estilo para a animação de pulso (círculo externo) */
+.user-location-icon-pulse {
+  background-color: rgba(59, 130, 246, 0.3);
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  position: absolute;
+  animation: pulse-animation 2s infinite;
+}
+
+/* Animação Keyframes para o efeito de pulso */
+@keyframes pulse-animation {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+}
