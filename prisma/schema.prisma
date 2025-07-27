@@ -1,137 +1,118 @@
-// prisma/schema.prisma
-
-// Este é seu gerador de cliente Prisma, que nos permite interagir com os modelos
 generator client {
   provider = "prisma-client-js"
 }
 
-// Configuração da fonte de dados (nosso banco MongoDB)
 datasource db {
-  provider = "mongodb"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-// Model para Usuários
 model usuarios {
-  id                  String      @id @default(auto()) @map("_id") @db.ObjectId
-  matricula           String      @unique
-  nome                String
-  email               String      @unique
-  senha               String
-  admin               Boolean     @default(false)
-  codigo_recuperacao  String?
-  nascimento_at       DateTime?
-  created_at          DateTime    @default(now())
-  updated_at          DateTime    @updatedAt
+  id                 Int               @id @default(autoincrement())
+  matricula          String            @unique
+  nome               String
+  email              String            @unique
+  senha              String
+  admin              Boolean           @default(false)
+  codigo_recuperacao String?
+  nascimento_at      DateTime?
+  created_at         DateTime          @default(now())
+  updated_at         DateTime          @updatedAt
 
   // Relacionamentos
-  duvidas             duvidas[]
-  respostas           respostas[]
-  linhas_recentes     linhas_recentes[]
-  extrato_cartao      extrato_cartao[]
+  duvidas            duvidas[]
+  respostas          respostas[]
+  linhas_recentes    linhas_recentes[]
+  extrato_cartao     extrato_cartao[]
 }
 
-// Model para Itinerários
 model itinerarios {
-  id            String    @id @default(auto()) @map("_id") @db.ObjectId
-  linha         String
-  descricao     String    @unique
-  created_at    DateTime  @default(now())
-  updated_at    DateTime  @updatedAt
+  id                 Int                 @id @default(autoincrement())
+  linha              String
+  descricao          String              @unique
+  created_at         DateTime            @default(now())
+  updated_at         DateTime            @updatedAt
 
   // Relacionamentos
-  linhas_recentes   linhas_recentes[]
-  historico_paradas historico_paradas[]
-  embarques         embarque[]
+  linhas_recentes    linhas_recentes[]
+  historico_paradas  historico_paradas[]
+  embarques          embarque[]
 }
 
-// Model para registro de linhas recentes por usuário
 model linhas_recentes {
-  id            String    @id @default(auto()) @map("_id") @db.ObjectId
-  itinerario_id String    @db.ObjectId
-  usuario_id    String    @db.ObjectId
+  id            Int        @id @default(autoincrement())
+  itinerario_id Int
+  usuario_id    Int
   obs           String?
-  created_at    DateTime  @default(now())
-  updated_at    DateTime  @updatedAt
+  created_at    DateTime   @default(now())
+  updated_at    DateTime   @updatedAt
 
-  // Chave única composta para evitar duplicatas
   @@unique([itinerario_id, usuario_id])
 
-  // Relacionamentos
   itinerario    itinerarios @relation(fields: [itinerario_id], references: [id])
   usuario       usuarios    @relation(fields: [usuario_id], references: [id])
 }
 
-// Model para Dúvidas
 model duvidas {
-  id          String      @id @default(auto()) @map("_id") @db.ObjectId
-  usuario_id  String      @db.ObjectId
+  id          Int        @id @default(autoincrement())
+  usuario_id  Int
   mensagem    String
   fechado     Boolean     @default(false)
   created_at  DateTime    @default(now())
   updated_at  DateTime    @updatedAt
 
-  // Relacionamentos
   usuario     usuarios    @relation(fields: [usuario_id], references: [id])
   respostas   respostas[]
 }
 
-// Model para Respostas das Dúvidas
 model respostas {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  usuario_id  String   @db.ObjectId // Quem respondeu (pode ser admin)
-  duvida_id   String   @db.ObjectId
+  id          Int       @id @default(autoincrement())
+  usuario_id  Int
+  duvida_id   Int
   mensagem    String
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
 
-  // Relacionamentos
-  usuario     usuarios @relation(fields: [usuario_id], references: [id])
-  duvida      duvidas  @relation(fields: [duvida_id], references: [id])
+  usuario     usuarios  @relation(fields: [usuario_id], references: [id])
+  duvida      duvidas   @relation(fields: [duvida_id], references: [id])
 }
 
-// Model para Extrato do Cartão
 model extrato_cartao {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  usuario_id  String   @db.ObjectId
+  id          Int       @id @default(autoincrement())
+  usuario_id  Int
   valor       Float
   descricao   String
   saldo_atual Float
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
 
-  // Relacionamentos
-  usuario     usuarios @relation(fields: [usuario_id], references: [id])
+  usuario     usuarios  @relation(fields: [usuario_id], references: [id])
 }
 
-// Model para Embarques
 model embarque {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  itinerario_id String   @db.ObjectId
-  data          DateTime
-  sentido       String
-  ponto         String
-  localizacao   String
-  created_at    DateTime @default(now())
-  updated_at    DateTime @updatedAt
+  id                 Int                 @id @default(autoincrement())
+  itinerario_id      Int
+  data               DateTime
+  sentido            String
+  ponto              String
+  localizacao        String
+  created_at         DateTime            @default(now())
+  updated_at         DateTime            @updatedAt
 
-  // Relacionamentos
-  itinerario        itinerarios         @relation(fields: [itinerario_id], references: [id])
-  historico_paradas historico_paradas[]
+  itinerario         itinerarios         @relation(fields: [itinerario_id], references: [id])
+  historico_paradas  historico_paradas[]
 }
 
-// Model para Histórico de Paradas de um embarque
 model historico_paradas {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  itinerario_id String   @db.ObjectId
-  embarque_id   String   @db.ObjectId
+  id            Int       @id @default(autoincrement())
+  itinerario_id Int
+  embarque_id   Int
   horario       DateTime
-  status        String   // Ex: "A caminho", "Chegou", "Partiu"
+  status        String
   localizacao   String
-  created_at    DateTime @default(now())
-  updated_at    DateTime @updatedAt
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
 
-  // Relacionamentos
   itinerario    itinerarios @relation(fields: [itinerario_id], references: [id])
   embarque      embarque    @relation(fields: [embarque_id], references: [id])
 }
