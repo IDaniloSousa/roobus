@@ -1,4 +1,4 @@
--- CreateTable
+-- CreateTabl
 CREATE TABLE "usuarios" (
     "id" SERIAL NOT NULL,
     "matricula" TEXT NOT NULL,
