@@ -1,3 +1,4 @@
+// prisma/schema.prisma
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,111 +8,52 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model usuarios {
-  id                 Int               @id @default(autoincrement())
-  matricula          String            @unique
-  nome               String
-  email              String            @unique
-  senha              String
-  admin              Boolean           @default(false)
-  codigo_recuperacao String?
-  nascimento_at      DateTime?
-  created_at         DateTime          @default(now())
-  updated_at         DateTime          @updatedAt
-
-  duvidas            duvidas[]
-  respostas          respostas[]
-  linhas_recentes    linhas_recentes[]
-  extrato_cartao     extrato_cartao[]
-}
-
 model itinerarios {
-  id                 Int                 @id @default(autoincrement())
-  linha              String
-  descricao          String              @unique
-  created_at         DateTime            @default(now())
-  updated_at         DateTime            @updatedAt
+  id        Int       @id @default(autoincrement())
+  linha     String
+  descricao String    @unique
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
 
-  // Relacionamentos
-  linhas_recentes    linhas_recentes[]
-  historico_paradas  historico_paradas[]
-  embarques          embarque[]
+  horarios        Horario[]
+  linhas_recentes linhas_recentes[]
 }
 
 model linhas_recentes {
-  id            Int        @id @default(autoincrement())
-  itinerario_id Int
-  usuario_id    Int
-  obs           String?
-  created_at    DateTime   @default(now())
-  updated_at    DateTime   @updatedAt
-
-  @@unique([itinerario_id, usuario_id])
-
-  itinerario    itinerarios @relation(fields: [itinerario_id], references: [id])
-  usuario       usuarios    @relation(fields: [usuario_id], references: [id])
+  id                Int         @id @default(autoincrement())
+  anonymous_user_id String
+  itinerario_id     Int
+  obs               String?
+  createdAt         DateTime    @default(now()) @map("created_at")
+  updatedAt         DateTime    @updatedAt @map("updated_at")
+  itinerario        itinerarios @relation(fields: [itinerario_id], references: [id])
 }
 
 model duvidas {
-  id          Int        @id @default(autoincrement())
-  usuario_id  Int
-  mensagem    String
-  fechado     Boolean     @default(false)
-  created_at  DateTime    @default(now())
-  updated_at  DateTime    @updatedAt
-
-  usuario     usuarios    @relation(fields: [usuario_id], references: [id])
-  respostas   respostas[]
+  id                Int         @id @default(autoincrement())
+  anonymous_user_id String
+  mensagem          String
+  fechado           Boolean     @default(false)
+  createdAt         DateTime    @default(now()) @map("created_at")
+  updatedAt         DateTime    @updatedAt @map("updated_at")
+  respostas         respostas[]
 }
 
 model respostas {
-  id          Int       @id @default(autoincrement())
-  usuario_id  Int
-  duvida_id   Int
-  mensagem    String
-  created_at  DateTime  @default(now())
-  updated_at  DateTime  @updatedAt
-
-  usuario     usuarios  @relation(fields: [usuario_id], references: [id])
-  duvida      duvidas   @relation(fields: [duvida_id], references: [id])
+  id        Int      @id @default(autoincrement())
+  duvida_id  Int
+  mensagem   String
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  duvida     duvidas  @relation(fields: [duvida_id], references: [id])
 }
 
-model extrato_cartao {
-  id          Int       @id @default(autoincrement())
-  usuario_id  Int
-  valor       Float
-  descricao   String
-  saldo_atual Float
-  created_at  DateTime  @default(now())
-  updated_at  DateTime  @updatedAt
-
-  usuario     usuarios  @relation(fields: [usuario_id], references: [id])
-}
-
-model embarque {
-  id                 Int                 @id @default(autoincrement())
-  itinerario_id      Int
-  data               DateTime
-  sentido            String
-  ponto              String
-  localizacao        String
-  created_at         DateTime            @default(now())
-  updated_at         DateTime            @updatedAt
-
-  itinerario         itinerarios         @relation(fields: [itinerario_id], references: [id])
-  historico_paradas  historico_paradas[]
-}
-
-model historico_paradas {
-  id            Int       @id @default(autoincrement())
+model Horario {
+  id          Int      @id @default(autoincrement())
   itinerario_id Int
-  embarque_id   Int
-  horario       DateTime
-  status        String
-  localizacao   String
-  created_at    DateTime  @default(now())
-  updated_at    DateTime  @updatedAt
+  diaDaSemana String
+  sentido     String
+  partidas    String[]
 
-  itinerario    itinerarios @relation(fields: [itinerario_id], references: [id])
-  embarque      embarque    @relation(fields: [embarque_id], references: [id])
+  itinerario  itinerarios @relation(fields: [itinerario_id], references: [id])
 }
