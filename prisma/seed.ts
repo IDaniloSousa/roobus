@@ -67,6 +67,13 @@ async function main() {
               diaDaSemana: 'Domingo e feriado',
               partidas: ['05:25', '06:25', '07:30', '08:40', '09:50', '11:00', '12:10', '13:20', '14:30', '15:40', '16:50', '18:00', '19:10', '20:20', '21:30', '22:30'],
             },
+            // ↓↓↓ AQUI É ONDE ENTRARIAM OS NOVOS DADOS de Centro para Bairro↓↓↓
+            // {
+            //   itinerario_id: itinerario.id,
+            //   sentido: 'CENTRO → BAIRRO',
+            //   diaDaSemana: 'Segunda a sábado',
+            //   partidas: ['06:00', '07:00', '...'], // Horários a serem pesquisados
+            // },
           ],
         });
       }
