@@ -1,7 +1,7 @@
 // src/app/perguntas-frequentes/page.tsx
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   CaretDown,
   ThumbsUp,
@@ -12,7 +12,7 @@ import Header from '@/components/Header'; // Importando nosso Header reutilizáv
 
 // Dados das perguntas e respostas (mantidos como antes)
 const faqData = [
-    {
+  {
     question: 'Como posso encontrar a rota de ônibus mais rápida?',
     answer: 'Utilize a função "Buscar Rota" na tela de Busca. Insira seu ponto de partida e destino, e nosso algoritmo calculará a melhor opção, considerando o trânsito em tempo real e os horários programados.',
   },
@@ -80,15 +80,37 @@ function FaqItem({ item, isOpen, onToggle }: { item: typeof faqData[0]; isOpen: 
 export default function PerguntasFrequentesPage() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const [newQuestion, setNewQuestion] = useState('');
+  const [loadEnviarDuvida, setLoadEnviarDuvida] = useState<Boolean>(false);
+
+  // useEffect(() => {
+  //   postDuvidas
+  // }, [newQuestion])
+
+  const postDuvidas = async (duvida: string) => {
+    setLoadEnviarDuvida(true)
+    try {
+      const response = await fetch('http://localhost:3000/api/duvidas', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(duvida)
+      })
+    } catch {
+      alert(`Ops! houve algum erro`);
+    }
+    setLoadEnviarDuvida(false)
+  };
 
   const handleToggle = (index: number) => {
     setOpenIndex(openIndex === index ? null : index);
   };
 
-  const handleQuestionSubmit = (e: React.FormEvent) => {
+  const handleQuestionSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newQuestion.trim() === '') return;
-    alert(`Pergunta enviada para análise:\n"${newQuestion}"`);
+    postDuvidas(newQuestion)
+    //alert(`Pergunta enviada para análise:\n"${newQuestion}"`);
     setNewQuestion('');
   };
 
@@ -120,13 +142,14 @@ export default function PerguntasFrequentesPage() {
               onChange={(e) => setNewQuestion(e.target.value)}
               placeholder="Digite sua pergunta aqui..."
               // MUDANÇA APLICADA AQUI
+              disabled={loadEnviarDuvida == true}
               className="flex-grow resize-none border border-gray-300 rounded-lg p-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               rows={3}
             />
             <button
               type="submit"
               className="p-3 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 disabled:bg-indigo-300"
-              disabled={!newQuestion.trim()}
+              disabled={!newQuestion.trim() || loadEnviarDuvida == true}
               aria-label="Enviar pergunta"
             >
               <PaperPlaneTilt size={24} weight="fill" />
