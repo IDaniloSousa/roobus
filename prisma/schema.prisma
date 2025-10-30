@@ -9,11 +9,11 @@ datasource db {
 }
 
 model itinerarios {
-  id        Int       @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   linha     String
-  descricao String    @unique
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
+  descricao String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   horarios        Horario[]
   linhas_recentes linhas_recentes[]
@@ -27,6 +27,8 @@ model linhas_recentes {
   createdAt         DateTime    @default(now()) @map("created_at")
   updatedAt         DateTime    @updatedAt @map("updated_at")
   itinerario        itinerarios @relation(fields: [itinerario_id], references: [id])
+
+  @@unique([anonymous_user_id, itinerario_id], name: "UserRecentLineUnique")
 }
 
 model duvidas {
@@ -41,19 +43,19 @@ model duvidas {
 
 model respostas {
   id        Int      @id @default(autoincrement())
-  duvida_id  Int
-  mensagem   String
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @updatedAt @map("updated_at")
-  duvida     duvidas  @relation(fields: [duvida_id], references: [id])
+  duvida_id Int
+  mensagem  String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  duvida    duvidas  @relation(fields: [duvida_id], references: [id])
 }
 
 model Horario {
-  id          Int      @id @default(autoincrement())
+  id            Int      @id @default(autoincrement())
   itinerario_id Int
-  diaDaSemana String
-  sentido     String
-  partidas    String[]
+  diaDaSemana   String
+  sentido       String
+  partidas      String[]
 
-  itinerario  itinerarios @relation(fields: [itinerario_id], references: [id])
+  itinerario itinerarios @relation(fields: [itinerario_id], references: [id])
 }

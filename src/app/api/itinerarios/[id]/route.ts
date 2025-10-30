@@ -1,21 +1,33 @@
+///route.ts]
 import prisma from '../../../lib/prisma';
 import { NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  _context: { params: { id: string } } 
 ) {
   try {
-    const id = parseInt(params.id, 10);
+    // 1. Criamos a URL a partir do request
+    const url = new URL(request.url); 
+    // 2. Pegamos o pathname: /api/itinerarios/X
+    const pathParts = url.pathname.split('/');
+    // 3. Pegamos a última parte: "X"
+    const idString = pathParts[pathParts.length - 1];
+    
+    // 4. Usamos o idString em vez de params.id
+    const id = parseInt(idString, 10);
+
     if (isNaN(id)) {
-      return NextResponse.json({ error: 'ID da linha é inválido.' }, { status: 400 });
+      // Usamos o idString para o erro, caso não seja um número
+      return NextResponse.json({ error: `ID da linha é inválido: ${idString}` }, { status: 400 });
     }
 
     const itinerario = await prisma.itinerarios.findUnique({
       where: { id },
       include: {
-        // Inclui os horários relacionados a este itinerário na resposta
-        horarios: true, 
+        horarios: true,
       },
     });
 
