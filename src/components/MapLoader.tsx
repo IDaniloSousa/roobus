@@ -2,7 +2,6 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-// Importe os hooks 'useState' e 'useEffect' do React
 import { useMemo, useState, useEffect } from 'react';
 
 interface Stop {
@@ -12,34 +11,67 @@ interface Stop {
   lng: number;
 }
 
+// 👇 TIPO DE DADO ATUALIZADO
+// Define a estrutura do objeto que esperamos da API
+type RouteShapeData = {
+  coordinates: [number, number][];
+  startPoint: [number, number];
+  endPoint: [number, number];
+};
+
 interface MapLoaderProps {
   stops: Stop[];
+  lineId?: number;
+  sentido?: string;
 }
 
-export default function MapLoader({ stops }: MapLoaderProps) {
-  // 1. Crie um estado para o centro do mapa.
-  // Começa com uma localização padrão (São Paulo), que será usada caso o usuário negue a permissão.
+export default function MapLoader({ stops, lineId, sentido }: MapLoaderProps) {
   const [mapCenter, setMapCenter] = useState<[number, number]>([-23.5505, -46.6333]);
+  
+  // 👇 ESTADO ATUALIZADO para guardar o objeto inteiro
+  const [routeShape, setRouteShape] = useState<RouteShapeData | null>(null);
 
-  // 2. Use o useEffect para executar o código de geolocalização no navegador.
+  // Efeito para buscar a localização do usuário (sem alterações)
   useEffect(() => {
-    // A API de geolocalização só existe no objeto 'navigator' do navegador.
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        // Callback de sucesso:
         (position) => {
           const { latitude, longitude } = position.coords;
-          // 3. Se obtiver a localização, atualiza o estado do centro do mapa.
           setMapCenter([latitude, longitude]);
         },
-        // Callback de erro (opcional, mas recomendado):
         (error) => {
           console.error("Erro ao obter a localização do usuário:", error);
-          // O mapa permanecerá na localização padrão.
         }
       );
     }
-  }, []); // O array vazio [] garante que este efeito rode apenas uma vez.
+  }, []);
+
+  // Efeito para buscar o traçado da rota (sem alterações lógicas)
+  useEffect(() => {
+    if (!lineId || !sentido) {
+      setRouteShape(null);
+      return; 
+    }
+    
+    const fetchRouteShape = async () => {
+      try {
+        const response = await fetch(`/api/itinerarios/${lineId}/shape?sentido=${encodeURIComponent(sentido)}`);
+        
+        if (!response.ok) {
+          throw new Error('Traçado não encontrado');
+        }
+        // Agora esperamos o objeto completo (com startPoint, endPoint, etc.)
+        const data: RouteShapeData = await response.json(); 
+        setRouteShape(data); // Salva o objeto inteiro no estado
+      } catch (err) {
+        console.error("Erro ao buscar traçado da rota:", err);
+        setRouteShape(null);
+      }
+    };
+    
+    fetchRouteShape();
+    
+  }, [lineId, sentido]); 
 
   const Map = useMemo(
     () =>
@@ -50,6 +82,6 @@ export default function MapLoader({ stops }: MapLoaderProps) {
     []
   );
 
-  // 4. Passe o estado 'mapCenter' como prop para o componente do mapa.
-  return <Map stops={stops} center={mapCenter} />;
+  // Passe o objeto 'routeShape' inteiro como prop para o mapa
+  return <Map stops={stops} center={mapCenter} routeShape={routeShape} />;
 }

@@ -17,6 +17,7 @@ model itinerarios {
 
   horarios        Horario[]
   linhas_recentes linhas_recentes[]
+  route_shapes    RouteShape[]
 }
 
 model linhas_recentes {
@@ -58,4 +59,16 @@ model Horario {
   partidas      String[]
 
   itinerario itinerarios @relation(fields: [itinerario_id], references: [id])
+}
+
+model RouteShape {
+  id            Int         @id @default(autoincrement())
+  itinerario_id Int
+  sentido       String
+  coordinates   Json
+  startPoint    Json? // Armazena o Ponto A [lat, lng]
+  endPoint      Json? // Armazena o Ponto B [lat, lng]
+  itinerario    itinerarios @relation(fields: [itinerario_id], references: [id])
+
+  @@unique([itinerario_id, sentido], name: "ItinerarioSentidoUnique")
 }
