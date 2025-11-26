@@ -12,6 +12,15 @@ type Itinerario = {
   descricao: string;
 };
 
+// Define o tipo da resposta da API (que agora é paginada)
+type ApiResponse = {
+  data: Itinerario[];
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+};
+
 export default function BuscaPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [todasAsLinhas, setTodasAsLinhas] = useState<Itinerario[]>([]);
@@ -22,12 +31,17 @@ export default function BuscaPage() {
   useEffect(() => {
     async function fetchItinerarios() {
       try {
-        const response = await fetch('/api/itinerarios');
+        // CORREÇÃO 1: Adicionamos ?limit=1000 para buscar todas as linhas
+        const response = await fetch('/api/itinerarios?limit=1000');
+        
         if (!response.ok) {
           throw new Error('Falha ao buscar dados');
         }
-        const data: Itinerario[] = await response.json();
-        setTodasAsLinhas(data);
+        
+        // CORREÇÃO 2: O objeto retornado contém paginação, a lista real está em '.data'
+        const jsonResponse: ApiResponse = await response.json();
+        setTodasAsLinhas(jsonResponse.data);
+        
       } catch (error) {
         console.error(error);
       } finally {
@@ -97,4 +111,3 @@ export default function BuscaPage() {
     </div>
   );
 }
-

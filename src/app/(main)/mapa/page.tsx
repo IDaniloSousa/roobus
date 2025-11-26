@@ -4,7 +4,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import MapLoader from '@/components/MapLoader';
 import Navbar from '@/components/Navbar';
-import { Bus, ArrowClockwise, MapPin } from '@phosphor-icons/react';
+import { Bus, ArrowClockwise } from '@phosphor-icons/react';
 
 // O Header que você já tinha
 function Header() {
@@ -25,6 +25,15 @@ type ItinerarioComSentidos = {
   }[];
 };
 
+// Novo tipo para a resposta paginada da API
+type ApiResponse = {
+  data: ItinerarioComSentidos[];
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+};
+
 export default function MapaPage() {
   const exampleStops = [
     { id: 1, name: 'Parada Teste 1', lat: -16.4368, lng: -54.6374 },
@@ -40,12 +49,17 @@ export default function MapaPage() {
   useEffect(() => {
     async function fetchItinerarios() {
       try {
-        const response = await fetch('/api/itinerarios');
+        // CORREÇÃO 1: Adicionamos ?limit=1000 para buscar todas as linhas para o dropdown
+        const response = await fetch('/api/itinerarios?limit=1000');
+        
         if (!response.ok) {
           throw new Error('Falha ao buscar dados');
         }
-        const data: ItinerarioComSentidos[] = await response.json();
-        setTodasAsLinhas(data);
+        
+        // CORREÇÃO 2: Lemos o objeto de paginação e pegamos o array em .data
+        const jsonResponse: ApiResponse = await response.json();
+        setTodasAsLinhas(jsonResponse.data);
+        
       } catch (error) {
         console.error(error);
       } finally {
@@ -65,7 +79,7 @@ export default function MapaPage() {
 
   const handleLinhaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedLineId(e.target.value);
-    setSelectedSentido(''); // Reseta o sentido
+    setSelectedSentido(''); // Reseta o sentido ao trocar de linha
   };
 
   const handleSentidoChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -87,7 +101,7 @@ export default function MapaPage() {
             disabled={isLoading}
           >
             <option value="">{isLoading ? "Carregando linhas..." : "Selecione uma linha"}</option>
-            {/* 👇 Filtra para mostrar apenas linhas que TÊM traçados cadastrados */}
+            {/* Filtra para mostrar apenas linhas que TÊM traçados cadastrados */}
             {todasAsLinhas.filter(linha => linha.route_shapes.length > 0).map((linha) => (
               <option key={linha.id} value={linha.id}>
                 {linha.linha} - {linha.descricao}
