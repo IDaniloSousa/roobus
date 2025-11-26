@@ -10,6 +10,12 @@ npm run dev
 ``` bash instalar pacotes para mapa
  npm install -D @types/leaflet 
 ```
+``` bash para instalar pacotes de socket.io
+ npm install socket.io socket.io-client
+```
+``` bash para instalar pacotes de ts-node
+ npm install -D ts-node
+```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 

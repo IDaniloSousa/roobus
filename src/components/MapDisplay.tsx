@@ -19,7 +19,7 @@ L.Icon.Default.mergeOptions({
 
 // --- Ícone de Localização do Usuário ---
 const userLocationIcon = new L.DivIcon({
-  html: `<div class"user-location-icon-pulse"></div><div class="user-location-icon"></div>`,
+  html: `<div class="user-location-icon-pulse"></div><div class="user-location-icon"></div>`,
   className: 'bg-transparent',
   iconSize: [20, 20],
   iconAnchor: [10, 10],
@@ -39,6 +39,12 @@ const endIcon = new L.DivIcon({
   className: 'bg-transparent',
   iconSize: [24, 24],
   iconAnchor: [12, 12],
+});
+
+const busIcon = new L.Icon({
+  iconUrl: 'https://cdn-icons-png.flaticon.com/512/3448/3448339.png',
+  iconSize: [35, 35],
+  popupAnchor: [0, -15],
 });
 // --- Fim dos ícones ---
 
@@ -63,13 +69,24 @@ type RouteShapeData = {
   endPoint: [number, number];
 };
 
+// Tipo para os dados do ônibus
+export type BusData = {
+  userId: number;
+  name: string;
+  routeNumber: number;
+  lat: number;
+  lng: number;
+  timestamp: number;
+};
+
 interface MapDisplayProps {
   stops: Stop[];
   center: [number, number];
   routeShape: RouteShapeData | null; // <-- Prop atualizada para o objeto
+  buses: Record<number, BusData>;
 }
 
-export default function MapDisplay({ stops, center, routeShape }: MapDisplayProps) {
+export default function MapDisplay({ stops, center, routeShape, buses }: MapDisplayProps) {
   return (
     <MapContainer
       center={center}
@@ -113,6 +130,24 @@ export default function MapDisplay({ stops, center, routeShape }: MapDisplayProp
           </Marker>
         </>
       )}
+
+      {/* NOVO: Ônibus em Tempo Real */}
+      {Object.values(buses).map((bus) => (
+        <Marker 
+          key={bus.userId} 
+          position={[bus.lat, bus.lng]} 
+          icon={busIcon}
+          zIndexOffset={1000}
+        >
+          <Popup>
+            <div className="text-center">
+              <strong className="text-indigo-700 block text-lg">Linha {bus.routeNumber}</strong>
+              <span className="text-gray-600">{bus.name}</span>
+            </div>
+          </Popup>
+        </Marker>
+      ))}
+
     </MapContainer>
   );
 }

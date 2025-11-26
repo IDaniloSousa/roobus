@@ -5,6 +5,7 @@ import { useState, useEffect, useMemo } from 'react';
 import MapLoader from '@/components/MapLoader';
 import Navbar from '@/components/Navbar';
 import { Bus, ArrowClockwise } from '@phosphor-icons/react';
+import { getLoggedUser } from '@/app/actions/auth'; // Importe a action
 
 // O Header que você já tinha
 function Header() {
@@ -34,6 +35,13 @@ type ApiResponse = {
   totalPages: number;
 };
 
+// Tipo do usuário
+type User = {
+  id: number;
+  name: string;
+  route_number: number;
+} | null;
+
 export default function MapaPage() {
   const exampleStops = [
     { id: 1, name: 'Parada Teste 1', lat: -16.4368, lng: -54.6374 },
@@ -44,6 +52,35 @@ export default function MapaPage() {
   const [selectedLineId, setSelectedLineId] = useState<string>(''); 
   const [selectedSentido, setSelectedSentido] = useState<string>(''); 
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Estado para o usuário
+  const [currentUser, setCurrentUser] = useState<User>(null);
+
+  // Busca o usuário logado (Executa no cliente chamando o servidor)
+  useEffect(() => {
+    async function fetchUser() {
+      try {
+        const user = await getLoggedUser();
+        setCurrentUser(user);
+        
+        if (user && user.route_number) {
+        }
+      } catch (e) {
+        console.error("Erro ao verificar sessão:", e);
+      }
+    }
+    fetchUser();
+  }, []);
+
+  // Lógica para pré-selecionar a linha do motorista
+  useEffect(() => {
+    if (currentUser && currentUser.route_number && todasAsLinhas.length > 0) {
+      const linhaDoMotorista = todasAsLinhas.find(l => l.linha === String(currentUser.route_number));
+      if (linhaDoMotorista) {
+        setSelectedLineId(String(linhaDoMotorista.id));
+      }
+    }
+  }, [currentUser, todasAsLinhas]);
 
   // Busca todas as linhas quando o componente carrega
   useEffect(() => {
@@ -51,15 +88,15 @@ export default function MapaPage() {
       try {
         // CORREÇÃO 1: Adicionamos ?limit=1000 para buscar todas as linhas para o dropdown
         const response = await fetch('/api/itinerarios?limit=1000');
-        
+
         if (!response.ok) {
           throw new Error('Falha ao buscar dados');
         }
-        
+
         // CORREÇÃO 2: Lemos o objeto de paginação e pegamos o array em .data
         const jsonResponse: ApiResponse = await response.json();
         setTodasAsLinhas(jsonResponse.data);
-        
+
       } catch (error) {
         console.error(error);
       } finally {
@@ -72,7 +109,7 @@ export default function MapaPage() {
   // Filtra os sentidos disponíveis com base na linha selecionada
   const availableSentidos = useMemo(() => {
     if (!selectedLineId) return [];
-    
+
     const linha = todasAsLinhas.find(l => l.id === parseInt(selectedLineId));
     return linha ? linha.route_shapes.map(shape => shape.sentido) : [];
   }, [selectedLineId, todasAsLinhas]);
@@ -92,6 +129,14 @@ export default function MapaPage() {
 
       {/* PAINEL DE CONTROLE (OS DROPDOWNS) */}
       <div className="absolute top-16 left-0 right-0 z-10 p-2 bg-white shadow-lg m-3 rounded-lg flex flex-col gap-2">
+        
+        {/* Aviso se for motorista */}
+        {currentUser && (
+          <div className="bg-green-100 border border-green-300 text-green-800 px-3 py-1 rounded text-xs font-bold text-center">
+            Modo Motorista: Transmitindo Rota {currentUser.route_number}
+          </div>
+        )}
+
         <div className="flex items-center gap-2">
           <Bus size={20} className="text-gray-600 flex-shrink-0" />
           <select
@@ -135,6 +180,7 @@ export default function MapaPage() {
           // Passa os estados dinâmicos para o MapLoader
           lineId={selectedLineId ? parseInt(selectedLineId) : undefined}
           sentido={selectedSentido ? selectedSentido : undefined}
+          currentUser={currentUser}
         />
       </main>
 

@@ -72,3 +72,12 @@ model RouteShape {
 
   @@unique([itinerario_id, sentido], name: "ItinerarioSentidoUnique")
 }
+model SystemBus {
+  id           Int    @id @default(autoincrement())
+  name         String @db.VarChar(256)
+  login        String @unique @db.VarChar(256)
+  password     String @db.VarChar(256)
+  route_number Int    @map("route_number")
+
+  @@map("system_bus")
+}

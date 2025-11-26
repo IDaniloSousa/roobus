@@ -99,7 +99,20 @@ async function main() {
   await prisma.horario.deleteMany({});
   await prisma.linhas_recentes.deleteMany({});
   console.log('Relações (traçados, horários, recentes) limpas.');
-  
+  // NOVO: SEED DO USUÁRIO DO SISTEMA (MOTORISTA)
+  const user = await prisma.systemBus.upsert({
+    where: { login: '108' },
+    update: {},
+    create: {
+      id: 1,
+      name: '108 - Carlos Bezerra',
+      login: '108',
+      password: '108',
+      route_number: 108,
+    },
+  });
+  console.log(`Usuário criado/verificado: ${user.name}`);
+
   const descricoesLinhas = linhasDeOnibus.map(l => l.descricao);
 
   await prisma.itinerarios.deleteMany({
