@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import { ArrowUp, ArrowDown, Calendar, ArrowLeft } from '@phosphor-icons/react';
+// Importamos a função utilitária para o ID anônimo
+import { getAnonymousUserId } from '@/utils/anonymousUser';
 
-// Tipos para os dados que virão da API
+// 👇 ESTES SÃO OS TIPOS QUE FALTAVAM
 type Horario = {
   id: number;
   diaDaSemana: string;
@@ -19,6 +21,7 @@ type ItinerarioDetalhado = {
   descricao: string;
   horarios: Horario[];
 };
+// 👆 FIM DOS TIPOS
 
 export default function LinhaDetalhePage() {
   const params = useParams();
@@ -29,6 +32,7 @@ export default function LinhaDetalhePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // 1. Efeito para buscar os detalhes da linha
   useEffect(() => {
     if (!id) return;
 
@@ -51,6 +55,33 @@ export default function LinhaDetalhePage() {
     }
 
     fetchDetalhes();
+  }, [id]);
+
+  // 2. NOVO EFEITO: Registrar no Histórico
+  useEffect(() => {
+    if (!id) return;
+
+    const registrarHistorico = async () => {
+      try {
+        const anonymousId = getAnonymousUserId();
+        
+        await fetch('/api/linhas-recentes', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            itinerario_id: Number(id),
+            anonymous_user_id: anonymousId,
+          }),
+        });
+        
+      } catch (err) {
+        console.error("Falha ao registrar histórico:", err);
+      }
+    };
+
+    registrarHistorico();
   }, [id]);
 
   // Agrupa os horários por sentido para facilitar a renderização
