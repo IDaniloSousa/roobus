@@ -34,11 +34,12 @@ model linhas_recentes {
 
 model duvidas {
   id                Int         @id @default(autoincrement())
-  anonymous_user_id String
   mensagem          String
   fechado           Boolean     @default(false)
+  user_id           Int
   createdAt         DateTime    @default(now()) @map("created_at")
   updatedAt         DateTime    @updatedAt @map("updated_at")
+  SystemBus         SystemBus   @relation(fields: [user_id], references: [id])
   respostas         respostas[]
 }
 
@@ -72,12 +73,14 @@ model RouteShape {
 
   @@unique([itinerario_id, sentido], name: "ItinerarioSentidoUnique")
 }
+
 model SystemBus {
-  id           Int    @id @default(autoincrement())
-  name         String @db.VarChar(256)
-  login        String @unique @db.VarChar(256)
-  password     String @db.VarChar(256)
-  route_number Int    @map("route_number")
+  id           Int       @id @default(autoincrement())
+  name         String    @db.VarChar(256)
+  login        String    @unique @db.VarChar(256)
+  password     String    @db.VarChar(256)
+  route_number Int       @map("route_number")
+  duvidas      duvidas[]
 
   @@map("system_bus")
 }

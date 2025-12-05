@@ -11,6 +11,7 @@
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
     "@prisma/client": "^5.17.0",
+    "glin-profanity": "^2.3.8",
     "leaflet": "^1.9.4",
     "mongodb": "^6.17.0",
     "next": "15.3.4",
