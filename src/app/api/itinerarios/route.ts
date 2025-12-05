@@ -1,23 +1,34 @@
 // src/app/api/itinerarios/route.ts
-import prisma from '../../lib/prisma';
+import prisma from '../../lib/prisma'; //
 import { NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
 
-    // Parâmetros de paginação com valores padrão
     const page = Number(searchParams.get('page')) || 1;
     const limit = Number(searchParams.get('limit')) || 10;
+    const search = searchParams.get('search') || ''; // Captura o termo de busca
 
-    // Calcula quantos registros deve pular antes de começar a listar
     const skip = (page - 1) * limit;
 
-    // Busca os itinerários da página atual
+    // Constrói o filtro dinamicamente
+    const whereClause: Prisma.itinerariosWhereInput = search
+      ? {
+          OR: [
+            { linha: { contains: search, mode: 'insensitive' } },
+            { descricao: { contains: search, mode: 'insensitive' } },
+          ],
+        }
+      : {};
+
+    // Busca com filtro e paginação
     const [itinerarios, total] = await Promise.all([
       prisma.itinerarios.findMany({
         skip,
         take: limit,
+        where: whereClause, // Aplica o filtro
         orderBy: { linha: 'asc' },
         include: {
           route_shapes: {
@@ -27,10 +38,9 @@ export async function GET(request: Request) {
           },
         },
       }),
-      prisma.itinerarios.count(), // total de registros no banco
+      prisma.itinerarios.count({ where: whereClause }), // Conta apenas os filtrados
     ]);
 
-    // Retorna dados paginados e informações extras
     return NextResponse.json(
       {
         page,
