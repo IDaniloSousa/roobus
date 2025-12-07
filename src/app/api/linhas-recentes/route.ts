@@ -1,8 +1,7 @@
-// src/app/api/linhas-recentes/routes.ts
 import { NextResponse } from 'next/server';
-import prisma from '@/app/lib/prisma'; //
+import prisma from '@/app/lib/prisma'; // Certifique-se que o caminho do prisma está correto
 
-// --- FUNÇÃO GET (Nova) ---
+// --- FUNÇÃO GET: Busca o histórico do usuário ---
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -22,7 +21,7 @@ export async function GET(request: Request) {
         anonymous_user_id: anonymous_user_id,
       },
       include: {
-        // Inclui os dados do itinerário (linha, descrição)
+        // Inclui os dados do itinerário para exibir no card
         itinerario: {
           select: {
             id: true,
@@ -32,15 +31,13 @@ export async function GET(request: Request) {
         },
       },
       orderBy: {
-        // Ordena pelas mais recentes (última visualização)
+        // Ordena pelas mais recentes (última visualização primeiro)
         updatedAt: 'desc',
       },
       take: 6, // Limita aos 6 resultados mais recentes
     });
 
-    // 3. Retorna os dados
-    // Mapeia para retornar apenas os dados do itinerário,
-    // que é o que o front-end provavelmente precisa.
+    // 3. Formata os dados para retornar apenas a lista de itinerários
     const itinerarios = linhasRecentes.map((recente) => recente.itinerario);
 
     return NextResponse.json(itinerarios, { status: 200 });
@@ -53,7 +50,7 @@ export async function GET(request: Request) {
   }
 }
 
-// --- FUNÇÃO POST (Existente) ---
+// --- FUNÇÃO POST: Salva/Atualiza uma linha no histórico ---
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -72,26 +69,26 @@ export async function POST(request: Request) {
       typeof itinerario_id !== 'number'
     ) {
       return NextResponse.json(
-        { error: 'Tipos de dados inválidos' },
+        { error: 'Tipos de dados inválidos: anonymous_user_id deve ser string e itinerario_id deve ser number.' },
         { status: 400 },
       );
     }
 
-    // 2. Lógica de Upsert
+    // 2. Lógica de Upsert (Inserir ou Atualizar)
+    // Se já existe, atualiza o updatedAt (trazendo pro topo). Se não, cria.
     const linhaRecente = await prisma.linhas_recentes.upsert({
       where: {
-        // Onde encontrar o registro (com base no índice único do schema)
+        // Usa o índice único composto definido no schema.prisma
         UserRecentLineUnique: {
           anonymous_user_id: anonymous_user_id,
           itinerario_id: itinerario_id,
         },
       },
       update: {
-        // Se encontrar, apenas atualiza o `updatedAt` (automaticamente pelo Prisma)
-        obs: 'visualizado novamente',
+        // Ao atualizar, o campo updatedAt é atualizado automaticamente pelo Prisma
+        obs: 'visualizado novamente', 
       },
       create: {
-        // Se não encontrar, cria um novo registro
         anonymous_user_id: anonymous_user_id,
         itinerario_id: itinerario_id,
         obs: 'primeira visualização',

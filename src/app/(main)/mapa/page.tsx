@@ -5,9 +5,11 @@ import { useState, useEffect, useMemo } from 'react';
 import MapLoader from '@/components/MapLoader';
 import Navbar from '@/components/Navbar';
 import { Bus, ArrowClockwise } from '@phosphor-icons/react';
-import { getLoggedUser } from '@/app/actions/auth'; // Importe a action
+import { getLoggedUser } from '@/app/actions/auth';
+// Importação necessária para o histórico
+import { getAnonymousUserId } from '@/utils/anonymousUser';
 
-// O Header que você já tinha
+// Componente Header local
 function Header() {
   return (
     <header className="flex-shrink-0 bg-blue-600 text-white flex items-center justify-center h-16 shadow-md z-20">
@@ -16,7 +18,7 @@ function Header() {
   );
 }
 
-// Definimos um tipo para os dados da API
+// Tipos definidos localmente
 type ItinerarioComSentidos = {
   id: number;
   linha: string;
@@ -26,7 +28,6 @@ type ItinerarioComSentidos = {
   }[];
 };
 
-// Novo tipo para a resposta paginada da API
 type ApiResponse = {
   data: ItinerarioComSentidos[];
   page: number;
@@ -35,7 +36,6 @@ type ApiResponse = {
   totalPages: number;
 };
 
-// Tipo do usuário
 type User = {
   id: number;
   name: string;
@@ -56,15 +56,12 @@ export default function MapaPage() {
   // Estado para o usuário
   const [currentUser, setCurrentUser] = useState<User>(null);
 
-  // Busca o usuário logado (Executa no cliente chamando o servidor)
+  // Busca o usuário logado
   useEffect(() => {
     async function fetchUser() {
       try {
         const user = await getLoggedUser();
         setCurrentUser(user);
-        
-        if (user && user.route_number) {
-        }
       } catch (e) {
         console.error("Erro ao verificar sessão:", e);
       }
@@ -86,14 +83,12 @@ export default function MapaPage() {
   useEffect(() => {
     async function fetchItinerarios() {
       try {
-        // CORREÇÃO 1: Adicionamos ?limit=1000 para buscar todas as linhas para o dropdown
         const response = await fetch('/api/itinerarios?limit=1000');
 
         if (!response.ok) {
           throw new Error('Falha ao buscar dados');
         }
 
-        // CORREÇÃO 2: Lemos o objeto de paginação e pegamos o array em .data
         const jsonResponse: ApiResponse = await response.json();
         setTodasAsLinhas(jsonResponse.data);
 
@@ -105,6 +100,29 @@ export default function MapaPage() {
     }
     fetchItinerarios();
   }, []);
+
+  // NOVO EFEITO: Salvar no Histórico ao selecionar uma linha no Dropdown
+  useEffect(() => {
+    if (!selectedLineId) return;
+
+    const salvarNoHistorico = async () => {
+      const anonymousId = getAnonymousUserId();
+      try {
+        await fetch('/api/linhas-recentes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            itinerario_id: Number(selectedLineId),
+            anonymous_user_id: anonymousId,
+          }),
+        });
+      } catch (error) {
+        console.error("Erro ao salvar histórico no mapa:", error);
+      }
+    };
+
+    salvarNoHistorico();
+  }, [selectedLineId]);
 
   // Filtra os sentidos disponíveis com base na linha selecionada
   const availableSentidos = useMemo(() => {
@@ -146,7 +164,6 @@ export default function MapaPage() {
             disabled={isLoading}
           >
             <option value="">{isLoading ? "Carregando linhas..." : "Selecione uma linha"}</option>
-            {/* Filtra para mostrar apenas linhas que TÊM traçados cadastrados */}
             {todasAsLinhas.filter(linha => linha.route_shapes.length > 0).map((linha) => (
               <option key={linha.id} value={linha.id}>
                 {linha.linha} - {linha.descricao}
@@ -177,7 +194,6 @@ export default function MapaPage() {
       <main className="flex-1 relative z-0">
         <MapLoader
           stops={exampleStops}
-          // Passa os estados dinâmicos para o MapLoader
           lineId={selectedLineId ? parseInt(selectedLineId) : undefined}
           sentido={selectedSentido ? selectedSentido : undefined}
           currentUser={currentUser}

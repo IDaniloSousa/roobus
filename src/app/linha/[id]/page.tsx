@@ -1,3 +1,4 @@
+// src/app/linha/[id]/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -5,9 +6,9 @@ import { useParams, useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import { ArrowUp, ArrowDown, Calendar, ArrowLeft } from '@phosphor-icons/react';
 // Importamos a função utilitária para o ID anônimo
-import { getAnonymousUserId } from '@/utils/anonymousUser';
+import { getAnonymousUserId } from '@/utils/anonymousUser'; 
 
-// 👇 ESTES SÃO OS TIPOS QUE FALTAVAM
+// 👇 TIPOS ADICIONADOS AQUI
 type Horario = {
   id: number;
   diaDaSemana: string;
@@ -32,7 +33,7 @@ export default function LinhaDetalhePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // 1. Efeito para buscar os detalhes da linha
+  // 1. Efeito para buscar os detalhes da linha (Já existente)
   useEffect(() => {
     if (!id) return;
 
@@ -57,7 +58,7 @@ export default function LinhaDetalhePage() {
     fetchDetalhes();
   }, [id]);
 
-  // 2. NOVO EFEITO: Registrar no Histórico
+  // 2. NOVO EFEITO: Registrar no Histórico (POST /api/linhas-recentes)
   useEffect(() => {
     if (!id) return;
 
