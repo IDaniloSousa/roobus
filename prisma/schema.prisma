@@ -79,8 +79,21 @@ model SystemBus {
   name         String    @db.VarChar(256)
   login        String    @unique @db.VarChar(256)
   password     String    @db.VarChar(256)
-  route_number Int       @map("route_number")
+  role         String    @default("USER") 
+  route_number Int?       @map("route_number")
   duvidas      duvidas[]
+  logs         AccessLog[] // <-- Novo relacionamento
 
   @@map("system_bus")
+}
+
+model AccessLog {
+  id        Int      @id @default(autoincrement())
+  user_id   Int
+  action    String   // 'LOGIN', 'LOGOUT', 'REGISTER'
+  timestamp DateTime @default(now())
+  
+  user      SystemBus @relation(fields: [user_id], references: [id])
+
+  @@map("access_logs")
 }

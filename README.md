@@ -16,6 +16,9 @@ npm run dev
 ``` bash para instalar pacotes de ts-node
  npm install -D ts-node
 ```
+``` bash para instalar o profanity-check
+ npm install glin-profanity
+```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 

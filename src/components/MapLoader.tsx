@@ -26,6 +26,7 @@ type User = {
   id: number;
   name: string;
   route_number: number;
+  role: string;
 } | null;
 
 interface MapLoaderProps {
@@ -80,7 +81,9 @@ export default function MapLoader({ stops, lineId, sentido, currentUser }: MapLo
 
   // Lógica de TRANSMISSÃO (Se for motorista)
   useEffect(() => {
-    if (!currentUser || !socket) return;
+    if (!currentUser || !socket || currentUser.role !== 'DRIVER' || !currentUser.route_number) {
+      return; 
+    }
 
     if ('geolocation' in navigator) {
       console.log(`Iniciando transmissão rota ${currentUser.route_number}...`);
@@ -92,7 +95,7 @@ export default function MapLoader({ stops, lineId, sentido, currentUser }: MapLo
           const payload: BusData = {
             userId: currentUser.id,
             name: currentUser.name,
-            routeNumber: currentUser.route_number,
+            routeNumber: currentUser.route_number!,
             lat: latitude,
             lng: longitude,
             timestamp: Date.now(),
@@ -108,7 +111,7 @@ export default function MapLoader({ stops, lineId, sentido, currentUser }: MapLo
           }));
         },
         (error) => console.error('Erro GPS Watch:', error),
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
       );
     }
 
@@ -147,12 +150,11 @@ export default function MapLoader({ stops, lineId, sentido, currentUser }: MapLo
   const Map = useMemo(
     () =>
       dynamic(() => import('@/components/MapDisplay'), {
-        loading: () => <p className="text-center">Carregando mapa...</p>,
+        loading: () => <p className="text-center pt-20 text-gray-500">Carregando mapa...</p>,
         ssr: false,
       }),
     []
   );
 
-  // Passe o objeto 'routeShape' inteiro como prop para o mapa
   return <Map stops={stops} center={mapCenter} routeShape={routeShape} buses={buses}/>;
 }

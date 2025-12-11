@@ -102,16 +102,19 @@ async function main() {
   // NOVO: SEED DO USUÁRIO DO SISTEMA (MOTORISTA)
   const user = await prisma.systemBus.upsert({
     where: { login: '108' },
-    update: {},
+    update: {
+      route_number: 108,
+      role: 'DRIVER',
+    },
     create: {
-      id: 1,
       name: '108 - Carlos Bezerra',
       login: '108',
       password: '108',
       route_number: 108,
+      role: 'DRIVER',
     },
   });
-  console.log(`Usuário criado/verificado: ${user.name}`);
+  console.log(`Motorista atualizado: ${user.name} - Role: ${user.role}`);
 
   const descricoesLinhas = linhasDeOnibus.map(l => l.descricao);
 

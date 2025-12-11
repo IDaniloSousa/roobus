@@ -39,7 +39,8 @@ type ApiResponse = {
 type User = {
   id: number;
   name: string;
-  route_number: number;
+  route_number: number | null;
+  role: string;
 } | null;
 
 export default function MapaPage() {
@@ -149,9 +150,9 @@ export default function MapaPage() {
       <div className="absolute top-16 left-0 right-0 z-10 p-2 bg-white shadow-lg m-3 rounded-lg flex flex-col gap-2">
         
         {/* Aviso se for motorista */}
-        {currentUser && (
-          <div className="bg-green-100 border border-green-300 text-green-800 px-3 py-1 rounded text-xs font-bold text-center">
-            Modo Motorista: Transmitindo Rota {currentUser.route_number}
+        {currentUser && currentUser.role === 'DRIVER' && (
+          <div className="bg-indigo-100 border border-indigo-300 text-indigo-800 px-3 py-2 rounded text-xs font-bold text-center shadow-sm">
+            Modo Motorista Ativo: Linha {currentUser.route_number}
           </div>
         )}
 
