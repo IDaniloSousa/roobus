@@ -4,7 +4,7 @@
 import dynamic from 'next/dynamic';
 import { useMemo, useState, useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
-import type { BusData } from './MapDisplay'; // Importando o tipo
+import type { BusData } from './MapDisplay';
 
 interface Stop {
   id: number;
@@ -13,15 +13,12 @@ interface Stop {
   lng: number;
 }
 
-// 👇 TIPO DE DADO ATUALIZADO
-// Define a estrutura do objeto que esperamos da API
 type RouteShapeData = {
   coordinates: [number, number][];
   startPoint: [number, number];
   endPoint: [number, number];
 };
 
-// Tipo do usuário
 type User = {
   id: number;
   name: string;
@@ -38,14 +35,12 @@ interface MapLoaderProps {
 
 export default function MapLoader({ stops, lineId, sentido, currentUser }: MapLoaderProps) {
   const [mapCenter, setMapCenter] = useState<[number, number]>([-16.4674, -54.6382]);
-
-  // 👇 ESTADO ATUALIZADO para guardar o objeto inteiro
   const [routeShape, setRouteShape] = useState<RouteShapeData | null>(null);
   const [socket, setSocket] = useState<Socket | null>(null);
   const [buses, setBuses] = useState<Record<number, BusData>>({});
   const watchIdRef = useRef<number | null>(null);
 
-  // Efeito para buscar a localização do usuário (sem alterações)
+  // 1. Busca localização do usuário (GPS)
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -60,12 +55,30 @@ export default function MapLoader({ stops, lineId, sentido, currentUser }: MapLo
     }
   }, []);
 
-  // Conecta ao WebSocket
+  // 2. Conecta ao WebSocket (ALTERADO PARA TAILSCALE/UMBREL)
   useEffect(() => {
-    const socketInstance = io();
+    // 👇 AQUI ESTÁ A MUDANÇA IMPORTANTE
+    // Pega a URL do Tailscale do arquivo .env ou usa localhost se não tiver
+    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001';
+
+    console.log('Tentando conectar no Socket:', socketUrl);
+
+    const socketInstance = io(socketUrl, {
+      transports: ['websocket'], // 👇 Força Websocket (Essencial para Túneis como Tailscale)
+    });
+
     setSocket(socketInstance);
 
+    socketInstance.on('connect', () => {
+      console.log('✅ Conectado ao Socket do Umbrel!', socketInstance.id);
+    });
+
+    socketInstance.on('connect_error', (err) => {
+      console.error('❌ Erro de conexão Socket:', err);
+    });
+
     socketInstance.on('update-bus-position', (data: BusData) => {
+      // Se a atualização for do próprio usuário, ignora (já atualizamos localmente)
       if (currentUser && data.userId === currentUser.id) return;
 
       setBuses((prev) => ({
@@ -79,7 +92,7 @@ export default function MapLoader({ stops, lineId, sentido, currentUser }: MapLo
     };
   }, [currentUser]);
 
-  // Lógica de TRANSMISSÃO (Se for motorista)
+  // 3. Transmissão de Posição (Motorista)
   useEffect(() => {
     if (!currentUser || !socket || currentUser.role !== 'DRIVER' || !currentUser.route_number) {
       return; 
@@ -101,10 +114,10 @@ export default function MapLoader({ stops, lineId, sentido, currentUser }: MapLo
             timestamp: Date.now(),
           };
 
-          // Envia para o servidor
+          // Envia para o servidor Umbrel
           socket.emit('driver-location', payload);
 
-          // Atualiza localmente
+          // Atualiza o mapa localmente instantaneamente
           setBuses((prev) => ({
             ...prev,
             [currentUser.id]: payload,
@@ -120,7 +133,7 @@ export default function MapLoader({ stops, lineId, sentido, currentUser }: MapLo
     };
   }, [currentUser, socket]);
 
-  // Efeito para buscar o traçado da rota (sem alterações lógicas)
+  // 4. Busca traçado da rota (API Next.js)
   useEffect(() => {
     if (!lineId || !sentido) {
       setRouteShape(null);
@@ -130,21 +143,16 @@ export default function MapLoader({ stops, lineId, sentido, currentUser }: MapLo
     const fetchRouteShape = async () => {
       try {
         const response = await fetch(`/api/itinerarios/${lineId}/shape?sentido=${encodeURIComponent(sentido)}`);
-
-        if (!response.ok) {
-          throw new Error('Traçado não encontrado');
-        }
-        // Agora esperamos o objeto completo (com startPoint, endPoint, etc.)
+        if (!response.ok) throw new Error('Traçado não encontrado');
         const data: RouteShapeData = await response.json(); 
-        setRouteShape(data); // Salva o objeto inteiro no estado
+        setRouteShape(data); 
       } catch (err) {
-        console.error("Erro ao buscar traçado da rota:", err);
+        console.error("Erro ao buscar traçado:", err);
         setRouteShape(null);
       }
     };
 
     fetchRouteShape();
-
   }, [lineId, sentido]); 
 
   const Map = useMemo(
