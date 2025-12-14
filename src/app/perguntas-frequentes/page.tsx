@@ -2,17 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import {
-  CaretDown,
-  ThumbsUp,
-  ThumbsDown,
-  PaperPlaneTilt,
-  WarningIcon,
   ThumbsUpIcon,
   ThumbsDownIcon,
+  PaperPlaneTilt,
+  WarningIcon,
 } from '@phosphor-icons/react';
-import Header from '@/components/Header'; // Importando nosso Header reutilizável
+import Header from '@/components/Header';
 import { BiChevronDown } from 'react-icons/bi';
-
 
 interface Resposta {
   id: number
@@ -39,7 +35,6 @@ function FaqItem({ faq }: FaqItemProps) {
 
   const handleFeedback = (type: "helpful" | "not-helpful") => {
     setFeedback(type)
-    //console.log(`Feedback para FAQ ${faq.id}:`, type)
   }
 
   return (
@@ -50,7 +45,8 @@ function FaqItem({ faq }: FaqItemProps) {
       >
         <h3 className="text-xs text-gray-900 text-pretty">{faq.mensagem}</h3>
         <BiChevronDown
-          className={`w-5 h-5 text-gray-500 transition-transform flex-shrink-0 ml-4 ${isOpen ? "rotate-180" : ""}`}
+          // 👇 CORREÇÃO TAILWIND: flex-shrink-0 -> shrink-0
+          className={`w-5 h-5 text-gray-500 transition-transform shrink-0 ml-4 ${isOpen ? "rotate-180" : ""}`}
         />
       </button>
 
@@ -61,7 +57,6 @@ function FaqItem({ faq }: FaqItemProps) {
               <p className="text-gray-900 leading-relaxed text-sm">{resposta.mensagem}</p>
 
               <div className="flex items-center gap-3 pt-2">
-
                 <div className="grid grid-cols-2 gap-2 justify-items-center w-full">
                   {!feedback && <span className="text-sm text-gray-600 col-span-2">Isso foi útil?</span>}
                   <button
@@ -102,7 +97,8 @@ function FaqSkeleton() {
         <div className="flex-1">
           <div className="h-5 bg-gray-200 rounded w-3/4"></div>
         </div>
-        <div className="w-5 h-5 bg-gray-200 rounded ml-4 flex-shrink-0"></div>
+        {/* 👇 CORREÇÃO TAILWIND: flex-shrink-0 -> shrink-0 */}
+        <div className="w-5 h-5 bg-gray-200 rounded ml-4 shrink-0"></div>
       </div>
     </div>
   )
@@ -120,8 +116,8 @@ function FaqSkeletonList({ count = 4 }: { count?: number }) {
 
 export default function PerguntasFrequentesPage() {
   const [newQuestion, setNewQuestion] = useState('');
-  const [loadEnviarDuvida, setLoadEnviarDuvida] = useState<Boolean>(false);
-  const [loadDuvidas, setLoadDuvidas] = useState<Boolean>(true);
+  const [loadEnviarDuvida, setLoadEnviarDuvida] = useState<boolean>(false); // Use boolean minúsculo
+  const [loadDuvidas, setLoadDuvidas] = useState<boolean>(true); // Use boolean minúsculo
   const [errorMsg, setErrorMsg] = useState<string>('');
   const [duvidas, setDuvidas] = useState<any>([]);
 
@@ -132,12 +128,14 @@ export default function PerguntasFrequentesPage() {
   const getDuvidas = async () => {
     setLoadDuvidas(true)
     try {
-      const res = await fetch('http://localhost:3000/api/duvidas');
+      // API Corrigida (Caminho relativo)
+      const res = await fetch('/api/duvidas');
       const data = await res.json();
       setDuvidas(data);
-      setLoadDuvidas(false)
     } catch (e) {
       console.error(e)
+    } finally {
+      setLoadDuvidas(false)
     }
   };
 
@@ -145,7 +143,8 @@ export default function PerguntasFrequentesPage() {
   const postDuvidas = async (duvida: string) => {
     setLoadEnviarDuvida(true)
 
-    const req = await fetch('http://localhost:3000/api/duvidas', {
+    // API Corrigida (Caminho relativo)
+    const req = await fetch('/api/duvidas', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -202,7 +201,8 @@ export default function PerguntasFrequentesPage() {
           </div>
           {errorMsg && (
             <div className="bg-red-50 px-3 py-2 border border-red-200 mb-4 rounded-md flex gap-2 items-start">
-              <WarningIcon className="text-red-600 flex-shrink-0 mt-0.5" size={18} weight="bold" />
+              {/* 👇 CORREÇÃO TAILWIND: flex-shrink-0 -> shrink-0 */}
+              <WarningIcon className="text-red-600 shrink-0 mt-0.5" size={18} weight="bold" />
               <small className="text-red-600 text-sm">{errorMsg}</small>
             </div>
           )}
@@ -211,9 +211,9 @@ export default function PerguntasFrequentesPage() {
               value={newQuestion}
               onChange={(e) => setNewQuestion(e.target.value)}
               placeholder="Digite sua pergunta aqui..."
-              // MUDANÇA APLICADA AQUI
               disabled={loadEnviarDuvida == true}
-              className="flex-grow resize-none border border-gray-300 rounded-lg p-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              // 👇 CORREÇÃO TAILWIND: flex-grow -> grow
+              className="grow resize-none border border-gray-300 rounded-lg p-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               rows={1}
             />
             <button
