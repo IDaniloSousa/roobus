@@ -1,7 +1,6 @@
 // src/app/(main)/layout.tsx
-
 import Navbar from '@/components/Navbar';
-import Header from '@/components/Header'; // 1. Importe o novo componente
+import Header from '@/components/Header';
 import Login from '@/components/Login';
 import { getLoggedUser } from '@/app/actions/auth';
 
@@ -15,12 +14,13 @@ export default async function MainLayout({
   return (
     <div className="flex flex-col min-h-screen">
 
-      {/* 2. Adicione o Header aqui, passando um título padrão */}
+      {/* Header com o componente de Login integrado */}
       <Header title="RooBus">
         <Login currentUser={user} />
       </Header>
 
-      <main className="flex-grow bg-gray-50">
+      {/* 👇 AQUI: Trocado 'flex-grow' por 'grow' */}
+      <main className="grow bg-gray-50">
         {children}
       </main>
 
