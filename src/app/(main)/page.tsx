@@ -44,6 +44,7 @@ export default function HomePage() {
           setHistorico(data);
         }
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error("Erro histórico:", error);
       } finally {
         setLoadingHistorico(false);
@@ -66,7 +67,6 @@ export default function HomePage() {
         const { latitude, longitude } = position.coords;
         
         try {
-          // Chama nossa nova API passando as coordenadas
           const res = await fetch(`/api/linhas-proximas?lat=${latitude}&lng=${longitude}`);
           if (res.ok) {
             const data = await res.json();
@@ -75,17 +75,21 @@ export default function HomePage() {
             setGpsError('Erro ao buscar linhas próximas.');
           }
         } catch (error) {
-          console.error(error);
+          // eslint-disable-next-line no-console
+          console.error("Erro API Proximidade:", error);
           setGpsError('Erro de conexão.');
         } finally {
           setLoadingGPS(false);
         }
       },
-      (error) => {
+      (error: GeolocationPositionError) => {
+        // eslint-disable-next-line no-console
         console.error("Erro GPS:", error);
+        
         if (error.code === 1) setGpsError('Permissão de localização negada.');
         else if (error.code === 2) setGpsError('Localização indisponível.');
         else setGpsError('Erro ao obter localização.');
+        
         setLoadingGPS(false);
       },
       { enableHighAccuracy: true, timeout: 10000 }
@@ -132,7 +136,7 @@ export default function HomePage() {
                   nome={linha.nome}
                   variant={{ 
                     type: 'proxima', 
-                    tempoEstimado: linha.tempoEstimado, // Calculado pela API
+                    tempoEstimado: linha.tempoEstimado,
                     status: linha.status 
                   }}
                 />
