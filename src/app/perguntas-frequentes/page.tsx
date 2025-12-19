@@ -120,7 +120,7 @@ export default function PerguntasFrequentesPage() {
   const [loadDuvidas, setLoadDuvidas] = useState<boolean>(true); // Use boolean minúsculo
   const [errorMsg, setErrorMsg] = useState<string>('');
   const [duvidas, setDuvidas] = useState<any>([]);
-
+  
   useEffect(() => {
     getDuvidas();
   }, []);
@@ -143,7 +143,6 @@ export default function PerguntasFrequentesPage() {
   const postDuvidas = async (duvida: string) => {
     setLoadEnviarDuvida(true)
 
-    // API Corrigida (Caminho relativo)
     const req = await fetch('/api/duvidas', {
       method: 'POST',
       headers: {
@@ -161,6 +160,9 @@ export default function PerguntasFrequentesPage() {
       }
       if (req.status == 400) {
         setErrorMsg('Esse tipo de mensagem não é permitida!')
+      }
+      if (req.status != 429 && req.status != 400) {
+        setErrorMsg('Erro ao enviar pergunta, verifique se está logado.')
       }
     }
 
