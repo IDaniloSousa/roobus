@@ -6,7 +6,6 @@ import MapLoader from '@/components/MapLoader';
 import Navbar from '@/components/Navbar';
 import { Bus, ArrowClockwise } from '@phosphor-icons/react';
 import { getLoggedUser } from '@/app/actions/auth';
-// Importação necessária para o histórico
 import { getAnonymousUserId } from '@/utils/anonymousUser';
 
 // Componente Header local
@@ -44,17 +43,13 @@ type User = {
 } | null;
 
 export default function MapaPage() {
-  const exampleStops = [
-    { id: 1, name: 'Parada Teste 1', lat: -16.4368, lng: -54.6374 },
-    { id: 2, name: 'Parada Teste 2', lat: -16.4562, lng: -54.6321 },
-  ];
+  // --- PARADAS DE TESTE REMOVIDAS DAQUI ---
 
   const [todasAsLinhas, setTodasAsLinhas] = useState<ItinerarioComSentidos[]>([]);
   const [selectedLineId, setSelectedLineId] = useState<string>(''); 
   const [selectedSentido, setSelectedSentido] = useState<string>(''); 
   const [isLoading, setIsLoading] = useState(true);
   
-  // Estado para o usuário
   const [currentUser, setCurrentUser] = useState<User>(null);
 
   // Busca o usuário logado
@@ -85,14 +80,11 @@ export default function MapaPage() {
     async function fetchItinerarios() {
       try {
         const response = await fetch('/api/itinerarios?limit=1000');
-
         if (!response.ok) {
           throw new Error('Falha ao buscar dados');
         }
-
         const jsonResponse: ApiResponse = await response.json();
         setTodasAsLinhas(jsonResponse.data);
-
       } catch (error) {
         console.error(error);
       } finally {
@@ -102,7 +94,7 @@ export default function MapaPage() {
     fetchItinerarios();
   }, []);
 
-  // NOVO EFEITO: Salvar no Histórico ao selecionar uma linha no Dropdown
+  // Salvar no Histórico ao selecionar uma linha
   useEffect(() => {
     if (!selectedLineId) return;
 
@@ -125,17 +117,16 @@ export default function MapaPage() {
     salvarNoHistorico();
   }, [selectedLineId]);
 
-  // Filtra os sentidos disponíveis com base na linha selecionada
+  // Filtra os sentidos disponíveis
   const availableSentidos = useMemo(() => {
     if (!selectedLineId) return [];
-
     const linha = todasAsLinhas.find(l => l.id === parseInt(selectedLineId));
     return linha ? linha.route_shapes.map(shape => shape.sentido) : [];
   }, [selectedLineId, todasAsLinhas]);
 
   const handleLinhaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedLineId(e.target.value);
-    setSelectedSentido(''); // Reseta o sentido ao trocar de linha
+    setSelectedSentido(''); 
   };
 
   const handleSentidoChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -146,10 +137,7 @@ export default function MapaPage() {
     <div className="fixed inset-0 flex flex-col">
       <Header />
 
-      {/* PAINEL DE CONTROLE (OS DROPDOWNS) */}
       <div className="absolute top-16 left-0 right-0 z-10 p-2 bg-white shadow-lg m-3 rounded-lg flex flex-col gap-2">
-        
-        {/* Aviso se for motorista */}
         {currentUser && currentUser.role === 'DRIVER' && (
           <div className="bg-indigo-100 border border-indigo-300 text-indigo-800 px-3 py-2 rounded text-xs font-bold text-center shadow-sm">
             Modo Motorista Ativo: Linha {currentUser.route_number}
@@ -191,17 +179,16 @@ export default function MapaPage() {
         </div>
       </div>
 
-      {/* A ÁREA DO MAPA */}
       <main className="flex-1 relative z-0">
         <MapLoader
-          stops={exampleStops}
+          // 👇 Passamos um array vazio para não exibir paradas por enquanto
+          stops={[]} 
           lineId={selectedLineId ? parseInt(selectedLineId) : undefined}
           sentido={selectedSentido ? selectedSentido : undefined}
           currentUser={currentUser}
         />
       </main>
 
-      {/* O RODAPÉ (Navbar) */}
       <div className="flex-shrink-0 relative z-10 bg-white shadow-t">
         <Navbar />
       </div>
