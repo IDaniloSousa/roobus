@@ -127,7 +127,6 @@ export default function Login({ currentUser }: { currentUser: User }) {
                   name="login"
                   type="text" 
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                  placeholder={isRegister ? "Escolha um usuário" : "Ex: 108"}
                   required
                 />
               </div>
@@ -138,7 +137,6 @@ export default function Login({ currentUser }: { currentUser: User }) {
                   name="password"
                   type="password" 
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                  placeholder="Ex: 108"
                   required
                 />
                 {/* versão de testes apenas com senha simples e placeholder indicativo */}
