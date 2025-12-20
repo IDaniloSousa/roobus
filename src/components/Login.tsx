@@ -19,18 +19,34 @@ export default function Login({ currentUser }: { currentUser: User }) {
   const [error, setError] = useState('');
   const router = useRouter();
 
-  async function handleSubmit(formData: FormData) {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: ''
+  });
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
     setError('');
     
+    const formDataToSend = new FormData();
+    if (isRegister) {
+      formDataToSend.append('name', formData.name);
+    }
+    formDataToSend.append('login', formData.email);
+    formDataToSend.append('password', formData.password);
+
     const action = isRegister ? registerAction : loginAction;
-    const result = await action(formData);
+    const result = await action(formDataToSend);
 
     if (result.success) {
+      setFormData({ name: '', email: '', password: '' });
       setIsOpen(false);
-      setIsRegister(false); // Reseta para login na próxima vez
+      setIsRegister(false);
       router.refresh();
     } else {
       setError(result.message || 'Ocorreu um erro');
+      setFormData(prev => ({ ...prev, password: '' }));
     }
   }
 
@@ -38,6 +54,18 @@ export default function Login({ currentUser }: { currentUser: User }) {
   async function handleLogout() {
     await logoutAction();
     router.refresh();
+  }
+
+  function toggleMode() {
+    setIsRegister(!isRegister);
+    setError('');
+    setFormData(prev => ({ ...prev, password: '' }));
+  }
+
+  function closeModal() {
+    setIsOpen(false);
+    setIsRegister(false);
+    setError('');
   }
 
   // --- ESTADO 1: USUÁRIO LOGADO ---
@@ -84,13 +112,13 @@ export default function Login({ currentUser }: { currentUser: User }) {
           
           <div 
             className="absolute inset-0 bg-black/60 backdrop-blur-sm" 
-            onClick={() => { setIsOpen(false); setIsRegister(false); setError(''); }}
+            onClick={closeModal}
           />
 
           <div className="relative bg-white text-gray-800 rounded-xl shadow-2xl w-full max-w-sm p-6 animate-in fade-in zoom-in duration-200">
             
             <button 
-              onClick={() => { setIsOpen(false); setIsRegister(false); setError(''); }}
+              onClick={closeModal}
               className="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors"
             >
               <X size={24} />
@@ -105,15 +133,18 @@ export default function Login({ currentUser }: { currentUser: User }) {
               </p>
             </div>
 
-            <form action={handleSubmit} className="space-y-4">
+            <div className="space-y-4">
               
               {/* Campo Nome só aparece no Cadastro */}
               {isRegister && (
                 <div className="animate-in slide-in-from-top-2 duration-200">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Nome Completo</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Nome Completo
+                  </label>
                   <input 
-                    name="name"
                     type="text" 
+                    value={formData.name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                     placeholder="Seu nome"
                     required
@@ -121,49 +152,65 @@ export default function Login({ currentUser }: { currentUser: User }) {
                 </div>
               )}
 
+              {/* Campo Email */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Login / Email</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email
+                </label>
                 <input 
-                  name="login"
-                  type="text" 
+                  type="email" 
+                  value={formData.email}
+                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  placeholder="seu@email.com"
                   required
                 />
               </div>
 
+              {/* Campo Senha */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Senha</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Senha
+                </label>
                 <input 
-                  name="password"
                   type="password" 
+                  value={formData.password}
+                  onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSubmit(e);
+                    }
+                  }}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  placeholder="Mínimo 6 caracteres"
                   required
                 />
-                {/* versão de testes apenas com senha simples e placeholder indicativo */}
               </div>
 
+              {/* Mensagem de Erro */}
               {error && (
-                <div className="p-2 bg-red-50 text-red-600 text-sm rounded-lg text-center border border-red-100">
+                <div className="p-2 bg-red-50 text-red-600 text-sm rounded-lg text-center border border-red-100 animate-in slide-in-from-top-2 duration-200">
                   {error}
                 </div>
               )}
 
+              {/* Botão de Submit */}
               <button 
-                type="submit" 
+                onClick={handleSubmit}
                 className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded-lg transition-colors shadow-lg shadow-indigo-200"
               >
                 {isRegister ? 'Cadastrar' : 'Entrar'}
               </button>
-            </form>
+            </div>
 
-            {/* Link para alternar */}
+            {/* Link para alternar entre Login/Cadastro */}
             <div className="mt-4 text-center text-sm">
               <span className="text-gray-500">
                 {isRegister ? 'Já tem conta? ' : 'Não tem conta? '}
               </span>
               <button 
                 type="button"
-                onClick={() => { setIsRegister(!isRegister); setError(''); }}
+                onClick={toggleMode}
                 className="text-indigo-600 font-bold hover:underline"
               >
                 {isRegister ? 'Fazer Login' : 'Cadastre-se'}

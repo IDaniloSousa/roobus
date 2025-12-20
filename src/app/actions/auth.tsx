@@ -2,8 +2,11 @@
 
 import { PrismaClient } from '@prisma/client';
 import { cookies } from 'next/headers';
+import bcrypt from 'bcrypt';
+import validator from 'validator';
 
 const prisma = new PrismaClient();
+const SALT_ROUNDS = 10;
 
 async function createLog(userId: number, action: 'LOGIN' | 'LOGOUT' | 'REGISTER') {
   try {
@@ -27,69 +30,131 @@ export async function registerAction(formData: FormData) {
     return { success: false, message: 'Preencha todos os campos' };
   }
 
+  if (name.trim().length < 5) {
+    return { success: false, message: 'O nome deve ter pelo menos 5 caracteres' };
+  }
+
+  if (!validator.isEmail(login)) {
+    return { success: false, message: 'Por favor, insira um email válido' };
+  }
+
+  const normalizedEmail = login.toLowerCase().trim();
+
+  if (password.length < 6) {
+    return { success: false, message: 'A senha deve ter pelo menos 6 caracteres' };
+  }
+
   const existingUser = await prisma.systemBus.findUnique({
-    where: { login },
+    where: { login: normalizedEmail },
   });
 
   if (existingUser) {
-    return { success: false, message: 'Este login já está em uso' };
+    return { success: false, message: 'Este email já está em uso' };
   }
 
-  const newUser = await prisma.systemBus.create({
-    data: {
-      name,
-      login,
-      password,
-      role: 'USER',
-      route_number: null,
-    },
-  });
+  try {
+    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
-  const cookieStore = await cookies();
-  cookieStore.set('session_user_id', String(newUser.id), { 
-    httpOnly: true, 
-    secure: process.env.NODE_ENV === 'production', 
-    maxAge: 60 * 60 * 24 
-  });
+    const newUser = await prisma.systemBus.create({
+      data: {
+        name: name.trim(),
+        login: normalizedEmail,
+        password: hashedPassword,
+        role: 'USER',
+        route_number: null,
+      },
+    });
 
-  // LOG: Registro de novo usuário
-  await createLog(newUser.id, 'REGISTER');
+    const cookieStore = await cookies();
+    cookieStore.set('session_user_id', String(newUser.id), { 
+      httpOnly: true, 
+      secure: process.env.NODE_ENV === 'production', 
+      maxAge: 60 * 60 * 24, // 24 horas
+      sameSite: 'lax'
+    });
 
-  return { success: true, user: newUser };
+    await createLog(newUser.id, 'REGISTER');
+
+    return { 
+      success: true, 
+      user: { 
+        id: newUser.id, 
+        name: newUser.name, 
+        role: newUser.role 
+      } 
+    };
+  } catch (error) {
+    console.error("Erro ao registrar usuário:", error);
+    return { success: false, message: 'Erro ao criar conta. Tente novamente.' };
+  }
 }
 
 export async function loginAction(formData: FormData) {
   const login = formData.get('login') as string;
   const password = formData.get('password') as string;
 
-  const user = await prisma.systemBus.findUnique({ where: { login } });
-
-  if (!user || user.password !== password) {
-    return { success: false, message: 'Login ou senha inválidos' };
+  if (!login || !password) {
+    return { success: false, message: 'Preencha todos os campos' };
   }
 
-  const cookieStore = await cookies();
+  if (!validator.isEmail(login)) {
+    return { success: false, message: 'Por favor, insira um email válido' };
+  }
 
-  cookieStore.set('session_user_id', String(user.id), { 
-    httpOnly: true, 
-    secure: process.env.NODE_ENV === 'production', 
-    maxAge: 60 * 60 * 24 
-  });
+  const normalizedEmail = login.toLowerCase().trim();
 
-  await createLog(user.id, 'LOGIN');
+  try {
+    const user = await prisma.systemBus.findUnique({ 
+      where: { login: normalizedEmail } 
+    });
 
-  return { success: true, user };
+    if (!user) {
+      return { success: false, message: 'Email ou senha inválidos' };
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      return { success: false, message: 'Email ou senha inválidos' };
+    }
+
+    const cookieStore = await cookies();
+    cookieStore.set('session_user_id', String(user.id), { 
+      httpOnly: true, 
+      secure: process.env.NODE_ENV === 'production', 
+      maxAge: 60 * 60 * 24,
+      sameSite: 'lax'
+    });
+
+    await createLog(user.id, 'LOGIN');
+
+    return { 
+      success: true, 
+      user: { 
+        id: user.id, 
+        name: user.name, 
+        role: user.role 
+      } 
+    };
+  } catch (error) {
+    console.error("Erro ao fazer login:", error);
+    return { success: false, message: 'Erro ao fazer login. Tente novamente.' };
+  }
 }
 
 export async function logoutAction() {
-  const cookieStore = await cookies();
-  const userId = cookieStore.get('session_user_id')?.value;
+  try {
+    const cookieStore = await cookies();
+    const userId = cookieStore.get('session_user_id')?.value;
 
-  if (userId) {
-    await createLog(parseInt(userId), 'LOGOUT');
+    if (userId) {
+      await createLog(parseInt(userId), 'LOGOUT');
+    }
+
+    cookieStore.delete('session_user_id');
+  } catch (error) {
+    console.error("Erro ao fazer logout:", error);
   }
-
-  cookieStore.delete('session_user_id');
 }
 
 export async function getLoggedUser() {
@@ -101,12 +166,17 @@ export async function getLoggedUser() {
 
     const user = await prisma.systemBus.findUnique({
       where: { id: parseInt(userId) },
-      select: { id: true, name: true, route_number: true, role: true } 
+      select: { 
+        id: true, 
+        name: true, 
+        route_number: true, 
+        role: true 
+      } 
     });
 
     return user;
   } catch (error) {
-      console.error("Erro ao buscar usuário logado:", error);
+    console.error("Erro ao buscar usuário logado:", error);
     return null;
   }
 }

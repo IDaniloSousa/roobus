@@ -19,6 +19,14 @@ npm run dev
 ``` bash para instalar o profanity-check
  npm install glin-profanity
 ```
+``` bash para instalar o bcrypt
+ npm install bcrypt
+ npm install -D @types/bcrypt
+```
+``` bash para instalar o validator bcrypt
+ npm install validator bcrypt
+ npm install -D @types/validator @types/bcrypt
+```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 

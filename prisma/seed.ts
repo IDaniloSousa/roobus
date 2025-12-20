@@ -1,5 +1,6 @@
 // prisma/seed.ts
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
@@ -85,17 +86,37 @@ async function main() {
   await prisma.linhas_recentes.deleteMany({});
 
   const drivers = [
-    { login: '108', name: '108 - Carlos Bezerra' },
-    { login: '211', name: '211 - Atlântico / Cid. Deus' },
-    { login: '212', name: '212 - Jardim Atlântico' },
-    { login: '218', name: '218 - Alfredo de Castro' },
+    { linha: '108', name: '108 - Carlos Bezerra' },
+    { linha: '115', name: '115 - Paulista' },
+    { linha: '203', name: '203 - Parque Universitário' },
+    { linha: '209', name: '209 - Parque São Jorge' },
+    { linha: '211', name: '211 - Atlântico / Cid. Deus' },
+    { linha: '212', name: '212 - Jardim Atlântico' },
+    { linha: '214', name: '214 - Lucia Maggi' },
+    { linha: '218', name: '218 - Alfredo de Castro' },
+    { linha: '221', name: '221 - Padre Lothar' },
   ];
+
   for (const d of drivers) {
+    const login = `motorista${d.linha}@roobus.com`;
+    const password = await bcrypt.hash(`${d.linha}${d.linha}`, 10);
+    
     await prisma.systemBus.upsert({
-      where: { login: d.login },
-      update: { route_number: parseInt(d.login), role: 'DRIVER' },
-      create: { name: d.name, login: d.login, password: d.login, route_number: parseInt(d.login), role: 'DRIVER' },
+      where: { login: login },
+      update: { 
+        route_number: parseInt(d.linha), 
+        role: 'DRIVER',
+        password: password
+      },
+      create: { 
+        name: d.name, 
+        login: login, 
+        password: password, 
+        route_number: parseInt(d.linha), 
+        role: 'DRIVER' 
+      },
     });
+    console.log(`Motorista criado: ${login} (senha: ${d.linha}${d.linha})`);
   }
 
   const descricoes = linhasDeOnibus.map(l => l.descricao);
