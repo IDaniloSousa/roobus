@@ -11,7 +11,7 @@ import { getAnonymousUserId } from '@/utils/anonymousUser';
 // Componente Header local
 function Header() {
   return (
-    <header className="flex-shrink-0 bg-blue-600 text-white flex items-center justify-center h-16 shadow-md z-20">
+    <header className="shrink-0 bg-blue-600 text-white flex items-center justify-center h-16 shadow-md z-20">
       <h1 className="text-2xl font-bold">RooBus</h1>
     </header>
   );
@@ -145,7 +145,7 @@ export default function MapaPage() {
         )}
 
         <div className="flex items-center gap-2">
-          <Bus size={20} className="text-gray-600 flex-shrink-0" />
+          <Bus size={20} className="text-gray-600 shrink-0" />
           <select
             value={selectedLineId}
             onChange={handleLinhaChange}
@@ -162,7 +162,7 @@ export default function MapaPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <ArrowClockwise size={20} className="text-gray-600 flex-shrink-0" />
+          <ArrowClockwise size={20} className="text-gray-600 shrink-0" />
           <select
             value={selectedSentido}
             onChange={handleSentidoChange}
@@ -189,7 +189,7 @@ export default function MapaPage() {
         />
       </main>
 
-      <div className="flex-shrink-0 relative z-10 bg-white shadow-t">
+      <div className="shrink-0 relative z-10 bg-white shadow-t">
         <Navbar />
       </div>
     </div>

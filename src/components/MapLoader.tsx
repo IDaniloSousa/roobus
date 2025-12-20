@@ -22,7 +22,7 @@ type RouteShapeData = {
 type User = {
   id: number;
   name: string;
-  route_number: number;
+  route_number: number | null; // <--- Aceita null agora
   role: string;
 } | null;
 
