@@ -1,4 +1,3 @@
-```markdown
 # 🚌 RooBus
 
 > **Rastreamento de Transporte Coletivo em Tempo Real para Rondonópolis.**
@@ -18,7 +17,7 @@ O projeto utiliza uma stack robusta e atualizada:
 - **Banco de Dados:** PostgreSQL (via Prisma ORM).
 - **Segurança:** Bcrypt (Hash de senhas) & Cookies/Session.
 
----
+
 
 ## 🛠️ Instalação e Dependências
 
